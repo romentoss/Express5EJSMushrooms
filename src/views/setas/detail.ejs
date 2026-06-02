@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #333; }
+    header { background: #2d5016; color: white; padding: 1.5rem; }
+    header h1 { font-size: 1.5rem; }
+    main { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+    .btn { display: inline-block; background: #4a7c23; color: white; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; margin-top: 0.5rem; }
+    .btn:hover { background: #3d6a1c; }
+    .btn-danger { background: #c0392b; }
+    .btn-danger:hover { background: #a93226; }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; margin-bottom: 0.25rem; font-weight: 500; }
+    input, select, textarea { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
+    .api-response { background: #1a1a2e; color: #0f0; padding: 1rem; border-radius: 4px; font-family: monospace; white-space: pre-wrap; margin-top: 1rem; }
+    .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; }
+    .badge-alta { background: #27ae60; color: white; }
+    .badge-media { background: #f39c12; color: white; }
+    .badge-baja { background: #e74c3c; color: white; }
+    .badge-domesticada { background: #2980b9; color: white; }
+    .badge-silvestre { background: #8e44ad; color: white; }
+    nav { display: flex; gap: 1rem; }
+    .back-link { color: white; text-decoration: none; }
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 0.5rem; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>API Setas Comestibles</h1>
+    <nav>
+      <a href="/" class="back-link">Inicio</a>
+      <a href="/setas" class="back-link">Ver Todas</a>
+    </nav>
+  </header>
+  <main>
+    <div class="card">
+      <h2><%= seta.nombre %></h2>
+      <p style="font-style:italic;color:#666;font-size:1.1rem;"><%= seta.nombreCientifico %></p>
+    </div>
+
+    <div style="display:grid;grid-template-columns: 2fr 1fr;gap:1rem;">
+      <div class="card">
+        <h3>Información</h3>
+        <table>
+          <tr>
+            <td style="font-weight:500;">Categoría</td>
+            <td><span class="badge badge-<%= seta.categoria %>"><%= seta.categoria %></span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500;">Comestibilidad</td>
+            <td><span class="badge badge-<%= seta.comestibilidad %>"><%= seta.comestibilidad %></span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500;">Temporada</td>
+            <td><%= seta.temporada %></td>
+          </tr>
+        </table>
+
+        <h4 style="margin-top:1.5rem;">Descripción</h4>
+        <p><%= seta.descripcion %></p>
+      </div>
+
+      <div class="card">
+        <h3>Imagen</h3>
+        <img id="setaImagen" src="" alt="<%= seta.nombre %>" style="max-width:100%;border-radius:8px;display:none;">
+        <p id="sinImagen" style="color:#666;font-style:italic;">Cargando imagen...</p>
+      </div>
+
+      <div class="card">
+        <h3>Acciones</h3>
+        <a href="/setas" class="btn" style="display:block;text-align:center;">← Volver al Catálogo</a>
+
+        <h4 style="margin-top:1.5rem;">Eliminar Seta</h4>
+        <button onclick="eliminarSeta('<%= seta.id %>')" class="btn btn-danger" style="width:100%;">Eliminar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Respuesta JSON (GET /api/setas/<%= seta.id %>)</h3>
+      <div id="jsonResponse" class="api-response">Cargando...</div>
+    </div>
+
+    <script>
+      async function buscarImagen(nombreCientifico, nombreComun) {
+        const img = document.getElementById('setaImagen');
+        const sinImg = document.getElementById('sinImagen');
+
+        async function intentarBuscar(titulo) {
+          const encoded = encodeURIComponent(titulo);
+          try {
+            const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&titles=${encoded}&prop=pageimages&format=json&origin=*&pithumbsize=600`);
+            const data = await res.json();
+            const pages = data.query.pages;
+            const pageId = Object.keys(pages)[0];
+            if (pageId !== '-1' && pages[pageId].thumbnail) {
+              return pages[pageId].thumbnail.source;
+            }
+          } catch (e) {}
+          return null;
+        }
+
+        // Intentar primero con nombre científico
+        let imagen = await intentarBuscar(nombreCientifico);
+
+        // Si no funciona, intentar con nombre común
+        if (!imagen && nombreComun) {
+          imagen = await intentarBuscar(nombreComun);
+        }
+
+        // Si no funciona, buscar con "mushroom" o "seta" añadido
+        if (!imagen) {
+          imagen = await intentarBuscar(nombreCientifico + ' mushroom');
+        }
+
+        if (imagen) {
+          img.src = imagen;
+          img.style.display = 'block';
+          sinImg.style.display = 'none';
+        } else {
+          sinImg.textContent = 'Sin imagen disponible';
+        }
+      }
+
+      buscarImagen('<%= seta.nombreCientifico %>', '<%= seta.nombre %>');
+
+      async function eliminarSeta(id) {
+        if (!confirm('¿Estás seguro de eliminar esta seta?')) return;
+        const res = await fetch('/api/setas/' + id, { method: 'DELETE' });
+        if (res.status === 204) {
+          window.location.href = '/setas';
+        } else {
+          alert('Error al eliminar');
+        }
+      }
+
+      fetch('/api/setas/<%= seta.id %>')
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('jsonResponse').textContent = JSON.stringify(data, null, 2);
+        });
+    </script>
+  </main>
+</body>
+</html>

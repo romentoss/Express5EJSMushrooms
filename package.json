@@ -1,0 +1,20 @@
+{
+  "name": "setas-api",
+  "version": "1.0.0",
+  "description": "API REST de setas comestibles con Express 5",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "ejs": "^6.0.1",
+    "express": "^5.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

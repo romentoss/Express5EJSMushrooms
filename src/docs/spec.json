@@ -1,0 +1,145 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API Setas Comestibles",
+    "description": "API REST para gestionar un catálogo de setas comestibles. Soporta CRUD completo con filtrado por nombre y categoría.",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "http://localhost:3000/api" }],
+  "paths": {
+    "/setas": {
+      "get": {
+        "summary": "Listar setas",
+        "description": "Obtiene todas las setas. Soporta filtros por nombre y categoría.",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "description": "Filtrar por nombre (búsqueda parcial)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "categoria",
+            "in": "query",
+            "description": "Filtrar por categoría (domesticada o silvestre)",
+            "schema": { "type": "string", "enum": ["domesticada", "silvestre"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de setas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Seta" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear seta",
+        "description": "Crea una nueva seta en el catálogo.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SetaInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Seta creada" },
+          "400": { "description": "Datos inválidos" }
+        }
+      }
+    },
+    "/setas/{id}": {
+      "get": {
+        "summary": "Obtener seta por ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Detalles de la seta" },
+          "404": { "description": "Seta no encontrada" }
+        }
+      },
+      "put": {
+        "summary": "Actualizar seta",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SetaInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Seta actualizada" },
+          "404": { "description": "Seta no encontrada" }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar seta",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Seta eliminada" },
+          "404": { "description": "Seta no encontrada" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Seta": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "nombre": { "type": "string" },
+          "nombreCientifico": { "type": "string" },
+          "categoria": { "type": "string", "enum": ["domesticada", "silvestre"] },
+          "descripcion": { "type": "string" },
+          "temporada": { "type": "string" },
+          "comestibilidad": { "type": "string", "enum": ["alta", "media", "baja"] },
+          "imagen": { "type": "string" }
+        }
+      },
+      "SetaInput": {
+        "type": "object",
+        "required": ["nombre", "nombreCientifico", "categoria"],
+        "properties": {
+          "nombre": { "type": "string" },
+          "nombreCientifico": { "type": "string" },
+          "categoria": { "type": "string", "enum": ["domesticada", "silvestre"] },
+          "descripcion": { "type": "string" },
+          "temporada": { "type": "string" },
+          "comestibilidad": { "type": "string", "enum": ["alta", "media", "baja"] },
+          "imagen": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #333; }
+    header { background: #2d5016; color: white; padding: 1.5rem; }
+    header h1 { font-size: 1.5rem; }
+    main { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .btn { display: inline-block; background: #4a7c23; color: white; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; margin-top: 0.5rem; }
+    .btn:hover { background: #3d6a1c; }
+    .btn-danger { background: #c0392b; }
+    .btn-danger:hover { background: #a93226; }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; margin-bottom: 0.25rem; font-weight: 500; }
+    input, select, textarea { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
+    .api-response { background: #1a1a2e; color: #0f0; padding: 1rem; border-radius: 4px; font-family: monospace; white-space: pre-wrap; margin-top: 1rem; }
+    .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; }
+    .badge-alta { background: #27ae60; color: white; }
+    .badge-media { background: #f39c12; color: white; }
+    .badge-baja { background: #e74c3c; color: white; }
+    .badge-domesticada { background: #2980b9; color: white; }
+    .badge-silvestre { background: #8e44ad; color: white; }
+    .badge-tóxica { background: #c0392b; color: white; }
+    .badge-tóxica { background: #c0392b; color: white; }
+    .seccion-toxicas { background: #fff5f5; border: 2px solid #e74c3c; }
+    .seccion-toxicas h3 { color: #c0392b; }
+    .seccion-comestibles { background: #f0f9e8; }
+    nav { display: flex; gap: 1rem; }
+    .back-link { color: white; text-decoration: none; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .tab { padding: 0.75rem 1.5rem; background: #ddd; border-radius: 4px 4px 0 0; cursor: pointer; text-decoration: none; color: #333; }
+    .tab.active { background: #2d5016; color: white; }
+    .tab.active-tox { background: #c0392b; color: white; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>API Setas Comestibles</h1>
+    <nav>
+      <a href="/" class="back-link">Inicio</a>
+      <a href="/setas" class="back-link">Ver Todas</a>
+    </nav>
+  </header>
+  <main>
+    <div class="card">
+      <h2>Catálogo de Setas</h2>
+      <p>Hay <%= setas.length %> setas en el catálogo</p>
+      <div class="tabs">
+        <a href="?filtro=comestibles" class="tab <%= filtro === 'comestibles' ? 'active' : '' %>">Comestibles (<%= setas.filter(s => s.categoria !== 'tóxica').length %>)</a>
+        <a href="?filtro=toxicas" class="tab <%= filtro === 'toxicas' ? 'active active-tox' : '' %>">Tóxicas (<%= setas.filter(s => s.categoria === 'tóxica').length %>)</a>
+        <a href="/setas" class="tab <%= !filtro ? 'active' : '' %>">Todas</a>
+      </div>
+    </div>
+
+    <% if (filtro === 'toxicas') { %>
+    <div class="card seccion-toxicas">
+      <h3 style="color:#c0392b;">⚠️ Setas Tóxicas y Venenosas</h3>
+      <p style="margin-top:0.5rem;color:#666;">Estas setas NO son comestibles. Algunas pueden causar graves daños e incluso la muerte. <strong>NO las consumas bajo ninguna circunstancia.</strong></p>
+    </div>
+    <% } else if (filtro === 'comestibles') { %>
+    <div class="card seccion-comestibles">
+      <h3 style="color:#2d5016;"> Setas Comestibles</h3>
+      <p style="margin-top:0.5rem;color:#666;">Setas aptas para el consumo humano. Siempre verifica la identificación antes de consumir cualquier seta salvaje.</p>
+    </div>
+    <% } %>
+
+    <div class="grid">
+      <% setas.forEach(function(seta) { %>
+        <% var mostrar = (!filtro) || (filtro === 'toxicas' && seta.categoria === 'tóxica') || (filtro === 'comestibles' && seta.categoria !== 'tóxica'); %>
+        <% if (mostrar) { %>
+        <div class="card <%= seta.categoria === 'tóxica' ? 'seccion-toxicas' : '' %>">
+          <h3><%= seta.nombre %></h3>
+          <p style="font-style:italic;color:#666;"><%= seta.nombreCientifico %></p>
+          <p><%= seta.descripcion.substring(0, 100) %>...</p>
+          <div style="margin: 0.5rem 0;">
+            <span class="badge badge-<%= seta.categoria %>"><%= seta.categoria %></span>
+            <% if (seta.categoria !== 'tóxica') { %>
+            <span class="badge badge-<%= seta.comestibilidad %>"><%= seta.comestibilidad %></span>
+            <% } else { %>
+            <span class="badge badge-tóxica">VENENO</span>
+            <% } %>
+          </div>
+          <a href="/setas/<%= seta.id %>" class="btn <%= seta.categoria === 'tóxica' ? 'btn-danger' : '' %>">Ver Detalle</a>
+        </div>
+        <% } %>
+      <% }); %>
+    </div>
+
+    <div class="card" style="background:#f0f4e8;">
+      <h3 style="color:#2d5016;">Novedades en Express 5</h3>
+      <p style="margin-top:0.5rem;color:#555;font-size:0.95rem;">Express 5 es una versión majeure con cambios significativos en el manejo de rutas, middlewares y errores asíncronos. Aquí están los principales cambios:</p>
+
+      <div style="margin-top:1rem;">
+        <h4 style="color:#2d5016;">1. Middlewares Asíncronos Automáticos</h4>
+        <p style="color:#555;font-size:0.9rem;margin-top:0.25rem;">En Express 4, si tenías un middleware async y lanzabas un error, debías llamar <code>next(err)</code> manualmente. En Express 5, los errores en funciones async se capturan y pasan automáticamente al siguiente middleware de errores. <strong>Ya no necesitas <code>next(err)</code> en try/catch.</strong></p>
+        <pre style="background:#1a1a2e;color:#0f0;padding:0.75rem;border-radius:4px;font-size:0.85rem;margin-top:0.5rem;overflow-x:auto;">// Express 4 - require next(err)
+// Express 5 - automático
+app.get('/ruta', async (req, res) => {
+  const data = await fetchData();
+  if (!data) throw new Error('No encontrado');
+  res.json(data);
+});</pre>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <h4 style="color:#2d5016;">2. Parámetros de Ruta Opccionales</h4>
+        <p style="color:#555;font-size:0.9rem;margin-top:0.25rem;">Express 5 soporta nativamente el modificador <code>?</code> para hacer parámetros opcionales, algo que antes solo era posible con expresiones regulares complejas.</p>
+        <pre style="background:#1a1a2e;color:#0f0;padding:0.75rem;border-radius:4px;font-size:0.85rem;margin-top:0.5rem;overflow-x:auto;">// Antes (Express 4) - requería regex
+app.get('/user/:id?', (req, res) => { ... });
+
+// Ahora en Express 5 es nativo
+app.get('/user/:id?', (req, res) => { ... });</pre>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <h4 style="color:#2d5016;">3. Eliminación de APIs</h4>
+        <p style="color:#555;font-size:0.9rem;margin-top:0.25rem;">Express 5 elimina varias características deprecated:</p>
+        <ul style="color:#555;font-size:0.9rem;margin-top:0.5rem;margin-left:1.5rem;">
+          <li><code>res.redirect('back')</code> - Eliminado, usa <code>res.redirect('back')</code> manualmente o <code>express.Router()</code></li>
+          <li><code>app.param(fn)</code> - El callback de <code>app.param</code> ya no se invoca como middleware</li>
+          <li><code>req.query</code>不再是 un getter - Ahora es inmutable</li>
+          <li>Múltiples funciones de <code>app.use</code> y <code>app.METHOD()</code> deprecated</li>
+        </ul>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <h4 style="color:#2d5016;">4. Cambios en Routing</h4>
+        <p style="color:#555;font-size:0.9rem;margin-top:0.25rem;">Express 5 es más estricto con rutas duplicadas. Si defines la misma ruta dos veces, obtienes un error en tiempo de ejecución en lugar de una advertencia silenciosa.</p>
+        <pre style="background:#1a1a2e;color:#0f0;padding:0.75rem;border-radius:4px;font-size:0.85rem;margin-top:0.5rem;overflow-x:auto;">// En Express 5 esto lanza un error
+app.get('/users', handler1);
+app.get('/users', handler2); // Error: Route defined</pre>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <h4 style="color:#2d5016;">5. Sintaxis de Regex en Rutas</h4>
+        <p style="color:#555;font-size:0.9rem;margin-top:0.25rem;">Los parámetros con regex requieren el prefijo <code>?: </code>para grupos no capturadores:</p>
+        <pre style="background:#1a1a2e;color:#0f0;padding:0.75rem;border-radius:4px;font-size:0.85rem;margin-top:0.5rem;overflow-x:auto;">// Express 4
+app.get('/user/:id(\\d+)', ...);
+
+// Express 5 - requiere (?: ... )
+app.get('/user/(?:id)?(\\d+)', ...);</pre>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <h4 style="color:#2d5016;">6. Mejoras de Rendimiento</h4>
+        <p style="color:#555;font-size:0.9rem;margin-top:0.25rem;">Express 5 incluye optimizaciones internas significativas: el sistema de routing fue reescrito para ser más rápido,减少了内存占用, y el handling de middlewares es más eficiente.</p>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <h4 style="color:#2d5016;">7. No más soporte para Node.js antiguo</h4>
+        <p style="color:#555;font-size:0.9rem;margin-top:0.25rem;">Express 5 requiere <strong>Node.js 18 o superior</strong>. Las versiones antiguas de Node ya no son compatibles.</p>
+      </div>
+
+      <p style="margin-top:1rem;font-size:0.9rem;color:#555;">
+        <em>Esta API usa Express 5 junto con EJS para las vistas y Swagger UI para la documentación interactiva.</em>
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Filtrar Setas</h3>
+      <form action="/setas" method="GET">
+        <div style="display:flex;gap:1rem;align-items:flex-end;">
+          <div class="form-group" style="flex:1;margin-bottom:0;">
+            <label>Por nombre:</label>
+            <input type="text" name="nombre" value="<%= filtros.nombre || '' %>" placeholder="Ej: Champiñón">
+          </div>
+          <div class="form-group" style="flex:1;margin-bottom:0;">
+            <label>Por categoría:</label>
+            <select name="categoria">
+              <option value="">Todas</option>
+              <option value="domesticada" <%= filtros.categoria === 'domesticada' ? 'selected' : '' %>>Domesticada</option>
+              <option value="silvestre" <%= filtros.categoria === 'silvestre' ? 'selected' : '' %>>Silvestre</option>
+              <option value="tóxica" <%= filtros.categoria === 'tóxica' ? 'selected' : '' %>>Tóxica</option>
+            </select>
+          </div>
+          <button type="submit" class="btn">Filtrar</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

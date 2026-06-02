@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #333; }
+    header { background: #2d5016; color: white; padding: 1.5rem; }
+    header h1 { font-size: 1.5rem; }
+    main { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .btn { display: inline-block; background: #4a7c23; color: white; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; margin-top: 0.5rem; }
+    .btn:hover { background: #3d6a1c; }
+    .btn-danger { background: #c0392b; }
+    .btn-danger:hover { background: #a93226; }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; margin-bottom: 0.25rem; font-weight: 500; }
+    input, select, textarea { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
+    .api-response { background: #1a1a2e; color: #0f0; padding: 1rem; border-radius: 4px; font-family: monospace; white-space: pre-wrap; margin-top: 1rem; }
+    .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; }
+    .badge-alta { background: #27ae60; color: white; }
+    .badge-media { background: #f39c12; color: white; }
+    .badge-baja { background: #e74c3c; color: white; }
+    .badge-domesticada { background: #2980b9; color: white; }
+    .badge-silvestre { background: #8e44ad; color: white; }
+    nav { display: flex; gap: 1rem; }
+    .back-link { color: white; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>API Setas Comestibles</h1>
+    <nav>
+      <a href="/" class="back-link">Inicio</a>
+      <a href="/setas" class="back-link">Ver Todas</a>
+    </nav>
+  </header>
+  <main>
+    <div class="card">
+      <h2>Bienvenido a la API de Setas Comestibles</h2>
+      <p>Explora nuestro catálogo de setas comestibles con documentación Swagger integrada.</p>
+      <div style="margin-top: 1rem;">
+        <a href="/setas" class="btn">Ver Todas las Setas</a>
+        <a href="/api/docs" class="btn" style="background:#2980b9;">Documentación Swagger</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Endpoints Disponibles</h3>
+      <ul style="margin: 1rem 0 0 1.5rem;">
+        <li><strong>GET /api/setas</strong> - Listar todas las setas</li>
+        <li><strong>GET /api/setas/:id</strong> - Detalle de una seta</li>
+        <li><strong>POST /api/setas</strong> - Crear nueva seta</li>
+        <li><strong>PUT /api/setas/:id</strong> - Actualizar seta</li>
+        <li><strong>DELETE /api/setas/:id</strong> - Eliminar seta</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Probar la API</h3>
+      <form id="testForm">
+        <div class="form-group">
+          <label>URL:</label>
+          <input type="text" id="apiUrl" value="/api/setas" placeholder="/api/setas">
+        </div>
+        <div class="form-group">
+          <label>Método:</label>
+          <select id="apiMethod">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+        </div>
+        <div class="form-group" id="bodyGroup" style="display:none;">
+          <label>Body (JSON):</label>
+          <textarea id="apiBody" rows="5" placeholder='{"nombre": "...", "nombreCientifico": "...", "categoria": "..."}'></textarea>
+        </div>
+        <button type="submit" class="btn">Ejecutar Solicitud</button>
+      </form>
+      <h4 style="margin-top:1rem;">Respuesta:</h4>
+      <div id="response" class="api-response">La respuesta aparecerá aquí...</div>
+    </div>
+
+    <script>
+      document.getElementById('testForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const url = document.getElementById('apiUrl').value;
+        const method = document.getElementById('apiMethod').value;
+        const body = document.getElementById('apiBody').value;
+
+        try {
+          const options = { method, headers: { 'Content-Type': 'application/json' } };
+          if (body && method !== 'GET' && method !== 'DELETE') {
+            options.body = body;
+          }
+          const res = await fetch(url, options);
+          const text = await res.text();
+          document.getElementById('response').textContent = `Status: ${res.status}\n\n${text}`;
+        } catch (err) {
+          document.getElementById('response').textContent = 'Error: ' + err.message;
+        }
+      });
+
+      document.getElementById('apiMethod').addEventListener('change', (e) => {
+        document.getElementById('bodyGroup').style.display =
+          (e.target.value === 'POST' || e.target.value === 'PUT') ? 'block' : 'none';
+      });
+    </script>
+  </main>
+</body>
+</html>
