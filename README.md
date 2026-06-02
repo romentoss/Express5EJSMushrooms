@@ -185,6 +185,3 @@ curl "http://localhost:3000/api/setas?categoria=silvestre"
 curl "http://localhost:3000/api/setas?nombre=Champi"
 ```
 
-## License
-
-MIT
